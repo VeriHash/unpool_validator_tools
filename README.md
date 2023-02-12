@@ -1,6 +1,8 @@
-# Unpool.fi Validator Tools
+![unpool](unpool.png)
 
-A repository of tools for administration of validators on Unpool.fi
+# Validator Tools
+
+A repository of tools for administration of validators for [Unpool.fi](https://unpool.fi/)
 
 ## Registering a Validator
 
@@ -12,7 +14,7 @@ There are two steps to registering a validator with Unpool.fi:
 
 ### Step 1 - Generate The Signed Message
 
-The [`sign.py`](signer/sign.py) script in the [`/signer`](signer) directory of this repository contains a Python script which will generate a BLS12-381 signature on random message content. The script must be run wherever the validator keystore file is stored.
+The [`sign.py`](sign/sign.py) script in the [`/sign`](sign) directory of this repository contains a Python script which will generate a BLS12-381 signature on random message content. The script must be run wherever the validator keystore file is stored.
 
 ##### Prerequisites
 
@@ -62,8 +64,33 @@ The script will output the required information used during validator registrati
 2. The signed message
 3. The signature used to sign the message
 
-### Step 2 - Register the validator
+### Step 2 - Register The Validator
 
 There are multiple ways to register a validator, but in the end, they all call the `add_validator` function of the Unpool.fi MEV pool [Proxy Contract](https://goerli.etherscan.io/address/0x606A1cB03cED72Cb1C7D0cdCcb630eDba2eF6231#code).
 
 > **Caution:** However you register your validator, ensure you are calling the Unpool.fi Proxy Contract at the address `0x606A1cB03cED72Cb1C7D0cdCcb630eDba2eF6231`.
+
+#### Register using `register/register.py`
+
+The [`register.py`](`register/register.py`) script in the [`/register`](register) directory of this repository will add your validator to the registration queue. You need to have a Web3 JSON RPC endpoint available for interacting with the chain.
+
+##### Prerequisites
+
+The script is written in Python and uses one external library written by the Ethereum Foundation:
+
+1. The `web3` library, used to interface Ethereum: https://github.com/ethereum/web3.py
+
+You must first have Python installed. Then you must install the prerequisites. I generally use `pip` like so:
+
+```bash
+pip install -r requirements.txt
+```
+
+##### Execution
+
+```bash
+
+```
+
+#### Register using Etherscan
+
