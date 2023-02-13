@@ -1,39 +1,70 @@
+# Example run:
+# python sign.py ~/keys/keystore-m_12345_1234_0_0_0-1234567890.json --password "$(cat ~/keys/password.txt)"
+
+import argparse
+import getpass
 import json
 
 from web3 import Web3
 
-BENEFICIARY_WALLET = '0x5b0DF4Ab7905F7e5098865900819188fA153dD0D'
-privateKey = ''
 
-w3 = Web3(Web3.HTTPProvider('http://127.0.0.1:8545/'))
-proxyContractAddress = '0x606A1cB03cED72Cb1C7D0cdCcb630eDba2eF6231'
-proxyContractABI = json.load(open('/home/dgleason/git/mev_sharing/oracle/ganache/abis/proxy.json'))
-proxyContract = w3.eth.contract(address=w3.toChecksumAddress(proxyContractAddress),
-                                abi=proxyContractABI)
+def register(endpoint, proxyContractAddress, proxyContractABI, publicKey, message, signature,
+             beneficiaryWalletAddress, beneficiaryWalletPrivateKey):
 
-# Generate a bunch of signature transactions
-transactions = []
-validators = json.load(open('validators.json'))
-for i, (filename, data) in enumerate(validators.items()):
-    print('generating transaction', i, filename)
-    publicKey, _, message, signature = data
+    # Make a connection to the JSON RPC endpoint so we can interact with the Ethereum chain
+    w3 = Web3(Web3.HTTPProvider(endpoint))
 
-    transaction = proxyContract.functions.add_validator(publicKey, message, signature, True)
+    # We need to create a contract object so we can register the validator
+    proxyContract = w3.eth.contract(address=w3.toChecksumAddress(proxyContractAddress),
+                                    abi=proxyContractABI)
+
+    # Create the function call
+    fnCall = proxyContract.functions.add_validator(publicKey, message, signature, True)
 
     # Create the transaction using the public key with a new nonce for each one
     txArgs = {
-        'from': BENEFICIARY_WALLET,
-        'nonce': w3.eth.get_transaction_count(BENEFICIARY_WALLET),
+        'from': beneficiaryWalletAddress,
+        'nonce': w3.eth.get_transaction_count(beneficiaryWalletAddress),
     }
-    txConstruct = transaction.buildTransaction(txArgs)
+    txConstruct = fnCall.buildTransaction(txArgs)
 
     # Sign the transaction with the admin's private key
-    txCreate = w3.eth.account.sign_transaction(txConstruct, privateKey)
+    txCreate = w3.eth.account.sign_transaction(txConstruct, beneficiaryWalletPrivateKey)
 
     # Send the transaction to our web3 endpoint
-    print(i, 'sending tx')
     txHash = w3.eth.send_raw_transaction(txCreate.rawTransaction)
 
     # Wait for the receipt
-    print(i, 'waiting on tx receipt for:', transaction)
-    txReceipt = w3.eth.wait_for_transaction_receipt(txHash)
+    return w3.eth.wait_for_transaction_receipt(txHash)
+
+
+if __name__ == '__main__':
+
+    # Parse some command line arguments
+    parser = argparse.ArgumentParser(description="Queue a validator for registration with Unpool.fi's MEV smoothing contracts")
+    parser.add_argument('endpoint', help='The Web3 JSON RPC endpoint')
+    parser.add_argument('proxyContractAddress', help='The address of the proxy contract used for registration')
+    parser.add_argument('proxyContractABIFilename', help='The filename of the JSON-formatted ABI of the proxy contract')
+    parser.add_argument('publicKey', help="The validator's public key")
+    parser.add_argument('message', help='The message signed by the validator, from `sign.py`')
+    parser.add_argument('signature', help='The signature used to sign the message, from `sign.py`')
+    parser.add_argument('beneficiaryWalletAddress', help='The wallet allowed to withdraw your balance')
+    parser.add_argument('--beneficiaryWalletPrivateKey', default=None, help='The private key of the beneficiary wallet')
+    args = parser.parse_args()
+
+    # Get the beneficiary wallet's private key if it wasn't given on the CLI (will be hidden)
+    msg = ("Please enter the beneficary wallet's private key. (Caution, please understand the source "
+           "code of this script and know what it is doing with your private key. It is used to sign "
+           "the registration transaction, but you should verify that statement. Anyone with your "
+           "private key can steal your crypto!): ")
+    beneficiaryWalletPrivateKey = args.beneficiaryWalletPrivateKey or getpass.getpass(msg)
+
+    # Load the proxy contract's JSON ABI
+    proxyContractABI = json.load(open(args.proxyContractABIFilename))
+
+    # Register!
+    print('Sending transactions to register validator...')
+    receipt = register(args.endpoint, args.proxyContractAddress, proxyContractABI,
+                       args.publicKey, args.message, args.signature,
+                       args.beneficiaryWalletAddress, beneficiaryWalletPrivateKey)
+    print(f'Transaction receipt: {receipt}')

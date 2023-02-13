@@ -42,7 +42,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Get the password if it wasn't given on the CLI (will be hidden)
-    password = args.password or getpass.getpass("Please enter the keystore decryption password: ")
+    password = args.password or getpass.getpass('Please enter the keystore decryption password: ')
 
     # Let's sign!
     publicKey, privateKey, message, signature = sign(args.filename, password)

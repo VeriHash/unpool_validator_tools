@@ -10,7 +10,7 @@ There are two steps to registering a validator with Unpool.fi:
 
 1. The first step is generating a signed message using the validator's private key, which proves ownership of the validator itself.
 
-2. The second step is requesting validator registration with Unpool.fi's MEV sharing contracts. The signed message generated from step 1, along with the validator public key, are sent to Unpool.fi's MEV sharing contracts as an Ethereum transaction. The transaction is signed using a wallet of your choice, which is also used to withdraw the funds (known throughout Unpool.fi's documentation and code as the "beneficiary wallet").
+2. The second step is requesting validator registration with Unpool.fi's MEV smoothing contracts. The signed message generated from step 1, along with the validator public key, are sent to Unpool.fi's MEV smoothing contracts as an Ethereum transaction. The transaction is signed using a wallet of your choice, which is also used to withdraw the funds (known throughout Unpool.fi's documentation and code as the "beneficiary wallet").
 
 ### Step 1 - Generate The Signed Message
 
@@ -89,8 +89,48 @@ pip install -r requirements.txt
 ##### Execution
 
 ```bash
+$ python register.py -h
+usage: register.py [-h] [--beneficiaryWalletPrivateKey BENEFICIARYWALLETPRIVATEKEY] endpoint proxyContractAddress proxyContractABIFilename publicKey message signature beneficiaryWalletAddress
 
+Queue a validator for registration with Unpool.fi's MEV smoothing contracts
+
+positional arguments:
+  endpoint              The Web3 JSON RPC endpoint
+  proxyContractAddress  The address of the proxy contract used for registration
+  proxyContractABIFilename
+                        The filename of the JSON-formatted ABI of the proxy contract
+  publicKey             The validator's public key
+  message               The message signed by the validator, from `sign.py`
+  signature             The signature used to sign the message, from `sign.py`
+  beneficiaryWalletAddress
+                        The wallet allowed to withdraw your balance
+
+options:
+  -h, --help            show this help message and exit
+  --beneficiaryWalletPrivateKey BENEFICIARYWALLETPRIVATEKEY
+                        The private key of the beneficiary wallet
 ```
+
+To execute the registration script you must have a working Web3 JSON RPC endpoint, information about the Proxy Contract, the output of a `sign.py` run, and beneficiary wallet credentials.
+
+- The Web3 JSON RPC endpoint might be from [Infura](https://www.infura.io/) or a locally running Geth endpoint. Usually it is run on port 8545.
+- The proxy contract address is `0x606A1cB03cED72Cb1C7D0cdCcb630eDba2eF6231`
+- You can get the Proxy contract's ABI from Etherscan: https://goerli.etherscan.io/address/0x606A1cB03cED72Cb1C7D0cdCcb630eDba2eF6231#code. Export the JSON or copy/paste into a file on your system.
+- The `publicKey`, `message`, and `signature` are the outputs from the script `sign/sign.py`, located in this repository.
+- The `beneficiaryWalletAddress` and `beneficiaryWalletPrivateKey` are the address and private key of the wallet which will be used to withdraw that validator's MEV balance at a later date.
+
+An example execution of the script would be:
+
+```bash
+python register.py http://127.0.0.1:8545/ 0x606A1cB03cED72Cb1C7D0cdCcb630eDba2eF6231 ~/proxy_contract_abi.json publicKey message signature 0xbob --beneficiaryWalletPrivateKey "$(cat ~/private_key.txt)"
+```
+
+The beneficiary wallet is used to sign registration transaction, and is also committed on chain as the wallet used to withdraw the MEV smoothing balance for the registered validator.
+
+> **Caution:** The `--beneficiaryWalletPrivateKey` flag inputs a wallet's private key on the command line. Please understand the source code of this script and know what it is doing with your private key. In this script, it is used to sign the registration transaction, but you should verify that statement. Anyone with your private key can steal your crypto! **NEVER** give a private key to anyone.
+
+The script will output the transaction receipt hash upon successful execution.
 
 #### Register using Etherscan
 
+(To be written)
