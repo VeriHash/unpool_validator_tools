@@ -1,8 +1,6 @@
-![unpool](unpool.png)
+# Unpool.fi Validator Tools
 
-# Validator Tools
-
-A repository of tools for administration of validators for [Unpool.fi](https://unpool.fi/)
+A repository of tools for user administration of validators for [Unpool.fi](https://unpool.fi/)
 
 ## Registering a Validator
 
