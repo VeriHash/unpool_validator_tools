@@ -68,4 +68,4 @@ if __name__ == '__main__':
     receipt = register(args.endpoint, args.proxyContractAddress, proxyContractABI,
                        args.publicKey, args.message, args.signature,
                        args.beneficiaryWalletAddress, beneficiaryWalletPrivateKey)
-    print(f'Transaction Hash: {receipt.transactionHash}')
+    print(f'Transaction Hash: {receipt.transactionHash.hex()}')
