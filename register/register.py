@@ -63,8 +63,9 @@ if __name__ == '__main__':
     proxyContractABI = json.load(open(args.proxyContractABIFilename))
 
     # Register!
+    print()
     print('Sending transactions to register validator...')
     receipt = register(args.endpoint, args.proxyContractAddress, proxyContractABI,
                        args.publicKey, args.message, args.signature,
                        args.beneficiaryWalletAddress, beneficiaryWalletPrivateKey)
-    print(f'Transaction receipt: {receipt}')
+    print(f'Transaction Hash: {receipt.transactionHash}')

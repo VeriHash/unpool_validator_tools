@@ -49,7 +49,7 @@ if __name__ == '__main__':
 
     # We need this information for the contract, and it needs to be hex encoded.
     print()
-    print('Enter the following information into the mev sharing contract:')
+    print('Enter the following information into the mev smoothing contract:')
     print('Public Key:', publicKey)
     print('Message:', message)
     print('Signature:', signature)

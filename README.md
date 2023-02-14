@@ -50,7 +50,14 @@ The input to the script is a Geth keystore file <sup>[1](https://eips.ethereum.o
 
 An example execution of the script would be:
 ```bash
-python sign.py ~/keys/keystore-m_12345_1234_0_0_0-1234567890.json --password "$(cat ~/keys/password.txt)"
+$ python sign.py \
+~/keys/keystore-m_12345_1234_0_0_0-1234567890.json \
+--password "$(cat ~/keys/password.txt)"
+
+Enter the following information into the mev smoothing contract:
+Public Key: 12345636d35753476269a8cd81c65b4433447f54b864b88cb73aca34b32cbfb73c6a9d3a83912337ccd89ad0778112a0
+Message: 566ab2123ad742e0928489b015aaf8
+Signature: 949999229999ab2123ad742e0928489b015aaf875f2530192837483f7a46839f90e0a6f16e54acbb71b2640bcfe005fa1673a2410f32ebe66b32995fd57f730d3c864b88cb73aca34b32cbfb73c6a9d3a83912337ccd89ad079a64122aa334cf
 ```
 The `.json` file is the filename of the validator keystore file, and `~/keys/password.txt` contains the password used during generation of the keystore file itself.
 
@@ -122,7 +129,18 @@ To execute the registration script you must have a working Web3 JSON RPC endpoin
 An example execution of the script would be:
 
 ```bash
-python register.py http://127.0.0.1:8545/ 0x606A1cB03cED72Cb1C7D0cdCcb630eDba2eF6231 ~/proxy_contract_abi.json publicKey message signature 0xbob --beneficiaryWalletPrivateKey "$(cat ~/private_key.txt)"
+$ python register.py \
+> http://127.0.0.1:8545/ \
+> 0x606A1cB03cED72Cb1C7D0cdCcb630eDba2eF6231 \
+> ~/proxy_contract_abi.json \
+> 12345636d35753476269a8cd81c65b4433447f54b864b88cb73aca34b32cbfb73c6a9d3a83912337ccd89ad0778112a0 \
+> 566ab2123ad742e0928489b015aaf8 \
+> 949999229999ab2123ad742e0928489b015aaf875f2530192837483f7a46839f90e0a6f16e54acbb71b2640bcfe005fa1673a2410f32ebe66b32995fd57f730d3c864b88cb73aca34b32cbfb73c6a9d3a83912337ccd89ad079a64122aa334cf \
+> 0x3b0DF1Ab7405F7e5235874900811328fB153dF0B \
+> --beneficiaryWalletPrivateKey "$(cat ~/private_key.txt)"
+
+Sending transactions to register validator...
+Transaction Hash: 0x11e3c325433bdf67c88b2466d074838249a80cbc3b041df14ce882c012241ad2
 ```
 
 The beneficiary wallet is used to sign registration transaction, and is also committed on chain as the wallet used to withdraw the MEV smoothing balance for the registered validator.
