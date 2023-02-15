@@ -19,7 +19,7 @@ The [`sign.py`](sign/sign.py) script in the [`/sign`](sign) directory of this re
 The script is written in Python and uses two external libraries written by the Ethereum Foundation:
 
 1. The `staking-deposit-cli`, used to interface with Geth keystore files: https://github.com/ethereum/staking-deposit-cli/blob/master/staking_deposit/key_handling/keystore.py
-2. The `py_ecc` library, used to generate GLS12-381 cryptographic signatures: https://github.com/ethereum/py_ecc
+2. The `py_ecc` library, used to generate BLS12-381 cryptographic signatures: https://github.com/ethereum/py_ecc
 
 You must first have Python installed. Then you must install the prerequisites. I generally use `pip` like so:
 
@@ -114,6 +114,7 @@ options:
   -h, --help            show this help message and exit
   --beneficiaryWalletPrivateKey BENEFICIARYWALLETPRIVATEKEY
                         The private key of the beneficiary wallet
+  --ofacEnabled         Set to true if you fall under OFAC jurisdiction. Otherwise set to false
 ```
 
 To execute the registration script you must have a working Web3 JSON RPC endpoint, information about the Proxy Contract, the output of a `sign.py` run, and beneficiary wallet credentials.
@@ -124,7 +125,7 @@ To execute the registration script you must have a working Web3 JSON RPC endpoin
 - The `publicKey`, `message`, and `signature` are the outputs from the script `sign/sign.py`, located in this repository.
 - The `beneficiaryWalletAddress` and `beneficiaryWalletPrivateKey` are the address and private key of the wallet which will be used to withdraw that validator's MEV balance at a later date.
 
-An example execution of the script would be:
+An example execution of the script for a validator falling under OFAC juridiction would be:
 
 ```bash
 $ python register.py \
@@ -135,7 +136,8 @@ $ python register.py \
 > 566ab2123ad742e0928489b015aaf8 \
 > 949999229999ab2123ad742e0928489b015aaf875f2530192837483f7a46839f90e0a6f16e54acbb71b2640bcfe005fa1673a2410f32ebe66b32995fd57f730d3c864b88cb73aca34b32cbfb73c6a9d3a83912337ccd89ad079a64122aa334cf \
 > 0x3b0DF1Ab7405F7e5235874900811328fB153dF0B \
-> --beneficiaryWalletPrivateKey "$(cat ~/private_key.txt)"
+> --beneficiaryWalletPrivateKey "$(cat ~/private_key.txt)" \
+> --ofacEnabled true
 
 Sending transactions to register validator...
 Transaction Hash: 0x11e3c325433bdf67c88b2466d074838249a80cbc3b041df14ce882c012241ad2
