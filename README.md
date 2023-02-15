@@ -100,7 +100,7 @@ usage: register.py [-h] [--beneficiaryWalletPrivateKey BENEFICIARYWALLETPRIVATEK
 Queue a validator for registration with Unpool.fi's MEV smoothing contracts
 
 positional arguments:
-  endpoint              The Web3 JSON RPC endpoint
+  endpoint              The Execution Layer JSON RPC endpoint
   proxyContractAddress  The address of the proxy contract used for registration
   proxyContractABIFilename
                         The filename of the JSON-formatted ABI of the proxy contract
@@ -119,7 +119,7 @@ options:
 
 To execute the registration script you must have a working Web3 JSON RPC endpoint, information about the Proxy Contract, the output of a `sign.py` run, and beneficiary wallet credentials.
 
-- The Web3 JSON RPC endpoint might be from [Infura](https://www.infura.io/) or a locally running Geth endpoint. Usually it is run on port 8545.
+- The Execution Layer JSON RPC endpoint might be from [Infura](https://www.infura.io/) or a locally running Geth endpoint. Usually it is run on port 8545.
 - The proxy contract address is `0x606A1cB03cED72Cb1C7D0cdCcb630eDba2eF6231`
 - You can get the Proxy contract's ABI from Etherscan: https://goerli.etherscan.io/address/0x606A1cB03cED72Cb1C7D0cdCcb630eDba2eF6231#code. Export the JSON or copy/paste into a file on your system.
 - The `publicKey`, `message`, and `signature` are the outputs from the script `sign/sign.py`, located in this repository.
