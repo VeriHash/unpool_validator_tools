@@ -114,7 +114,7 @@ options:
   -h, --help            show this help message and exit
   --beneficiaryWalletPrivateKey BENEFICIARYWALLETPRIVATEKEY
                         The private key of the beneficiary wallet
-  --ofacEnabled         Set to true if you fall under OFAC jurisdiction. Otherwise set to false
+  --ofacEnabled         Set this flag if you fall under OFAC jurisdiction
 ```
 
 To execute the registration script you must have a working Web3 JSON RPC endpoint, information about the Proxy Contract, the output of a `sign.py` run, and beneficiary wallet credentials.
@@ -136,8 +136,8 @@ $ python register.py \
 > 566ab2123ad742e0928489b015aaf8 \
 > 949999229999ab2123ad742e0928489b015aaf875f2530192837483f7a46839f90e0a6f16e54acbb71b2640bcfe005fa1673a2410f32ebe66b32995fd57f730d3c864b88cb73aca34b32cbfb73c6a9d3a83912337ccd89ad079a64122aa334cf \
 > 0x3b0DF1Ab7405F7e5235874900811328fB153dF0B \
-> --beneficiaryWalletPrivateKey "$(cat ~/private_key.txt)" \
-> --ofacEnabled true
+> true
+> --beneficiaryWalletPrivateKey "$(cat ~/private_key.txt)"
 
 Sending transactions to register validator...
 Transaction Hash: 0x11e3c325433bdf67c88b2466d074838249a80cbc3b041df14ce882c012241ad2

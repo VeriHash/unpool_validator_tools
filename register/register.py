@@ -50,7 +50,7 @@ if __name__ == '__main__':
     parser.add_argument('signature', help='The signature used to sign the message, from `sign.py`')
     parser.add_argument('beneficiaryWalletAddress', help='The wallet allowed to withdraw your balance')
     parser.add_argument('--beneficiaryWalletPrivateKey', default=None, help='The private key of the beneficiary wallet')
-    parser.add_argument('--ofacEnabled', default=None, help='Set to true if you fall under OFAC jurisdiction. Otherwise set false')
+    parser.add_argument('--ofacEnabled', action='store_true', help='Set this flag if you fall under OFAC jurisdiction')
     args = parser.parse_args()
 
     # Get the beneficiary wallet's private key if it wasn't given on the CLI (will be hidden)
@@ -60,18 +60,6 @@ if __name__ == '__main__':
            "private key can steal your crypto!): ")
     beneficiaryWalletPrivateKey = args.beneficiaryWalletPrivateKey or getpass.getpass(msg)
 
-    # Get the OFAC jurisdiction status if it wasn't given on the CLI or a bad value was used
-    if args.ofacEnabled is None or !bool(args.ofacEnabled):
-      while True:
-        try:
-          msg = ("Do you fall under OFAC jurisdiction? (true or false): ")
-          ofacEnaled = bool(input(msg))
-        except ValueError:
-          print("true or false not given")
-          continue
-        else:
-          break
-
     # Load the proxy contract's JSON ABI
     proxyContractABI = json.load(open(args.proxyContractABIFilename))
 
@@ -80,5 +68,6 @@ if __name__ == '__main__':
     print('Sending transactions to register validator...')
     receipt = register(args.endpoint, args.proxyContractAddress, proxyContractABI,
                        args.publicKey, args.message, args.signature,
-                       args.beneficiaryWalletAddress, beneficiaryWalletPrivateKey, ofacEnabled)
+                       args.beneficiaryWalletAddress, beneficiaryWalletPrivateKey,
+                       bool(args.ofacEnabled))
     print(f'Transaction Hash: {receipt.transactionHash.hex()}')
