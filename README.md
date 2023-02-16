@@ -19,7 +19,7 @@ The [`sign.py`](sign/sign.py) script in the [`/sign`](sign) directory of this re
 The script is written in Python and uses two external libraries written by the Ethereum Foundation:
 
 1. The `staking-deposit-cli`, used to interface with Geth keystore files: https://github.com/ethereum/staking-deposit-cli/blob/master/staking_deposit/key_handling/keystore.py
-2. The `py_ecc` library, used to generate GLS12-381 cryptographic signatures: https://github.com/ethereum/py_ecc
+2. The `py_ecc` library, used to generate BLS12-381 cryptographic signatures: https://github.com/ethereum/py_ecc
 
 You must first have Python installed. Then you must install the prerequisites. I generally use `pip` like so:
 
@@ -100,7 +100,7 @@ usage: register.py [-h] [--beneficiaryWalletPrivateKey BENEFICIARYWALLETPRIVATEK
 Queue a validator for registration with Unpool.fi's MEV smoothing contracts
 
 positional arguments:
-  endpoint              The Web3 JSON RPC endpoint
+  endpoint              The Execution Layer JSON RPC endpoint
   proxyContractAddress  The address of the proxy contract used for registration
   proxyContractABIFilename
                         The filename of the JSON-formatted ABI of the proxy contract
@@ -114,17 +114,18 @@ options:
   -h, --help            show this help message and exit
   --beneficiaryWalletPrivateKey BENEFICIARYWALLETPRIVATEKEY
                         The private key of the beneficiary wallet
+  --ofacEnabled         Set this flag if you fall under OFAC jurisdiction
 ```
 
 To execute the registration script you must have a working Web3 JSON RPC endpoint, information about the Proxy Contract, the output of a `sign.py` run, and beneficiary wallet credentials.
 
-- The Web3 JSON RPC endpoint might be from [Infura](https://www.infura.io/) or a locally running Geth endpoint. Usually it is run on port 8545.
+- The Execution Layer JSON RPC endpoint might be from [Infura](https://www.infura.io/) or a locally running Geth endpoint. Usually it is run on port 8545.
 - The proxy contract address is `0x606A1cB03cED72Cb1C7D0cdCcb630eDba2eF6231`
 - You can get the Proxy contract's ABI from Etherscan: https://goerli.etherscan.io/address/0x606A1cB03cED72Cb1C7D0cdCcb630eDba2eF6231#code. Export the JSON or copy/paste into a file on your system.
 - The `publicKey`, `message`, and `signature` are the outputs from the script `sign/sign.py`, located in this repository.
 - The `beneficiaryWalletAddress` and `beneficiaryWalletPrivateKey` are the address and private key of the wallet which will be used to withdraw that validator's MEV balance at a later date.
 
-An example execution of the script would be:
+An example execution of the script for a validator falling under OFAC juridiction would be:
 
 ```bash
 $ python register.py \
@@ -135,6 +136,7 @@ $ python register.py \
 > 566ab2123ad742e0928489b015aaf8 \
 > 949999229999ab2123ad742e0928489b015aaf875f2530192837483f7a46839f90e0a6f16e54acbb71b2640bcfe005fa1673a2410f32ebe66b32995fd57f730d3c864b88cb73aca34b32cbfb73c6a9d3a83912337ccd89ad079a64122aa334cf \
 > 0x3b0DF1Ab7405F7e5235874900811328fB153dF0B \
+> true
 > --beneficiaryWalletPrivateKey "$(cat ~/private_key.txt)"
 
 Sending transactions to register validator...
