@@ -31,6 +31,7 @@ def sign(filename, password):
     # Return the public key, the message, and the signature
     return keystore.pubkey, privateKey.hex(), message.hex(), bytes(signature).hex()
 
+
 if __name__ == '__main__':
 
     # Parse some command line arguments
