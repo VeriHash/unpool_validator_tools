@@ -21,9 +21,17 @@ The script is written in Python and uses two external libraries written by the E
 1. The `staking-deposit-cli`, used to interface with Geth keystore files: https://github.com/ethereum/staking-deposit-cli/blob/master/staking_deposit/key_handling/keystore.py
 2. The `py_ecc` library, used to generate BLS12-381 cryptographic signatures: https://github.com/ethereum/py_ecc
 
-You must first have Python installed. Then you must install the prerequisites. I generally use `pip` like so:
+You must first have Python installed. Then you must install the prerequisites. This can be done using `pip`:
 
 ```bash
+# Navigate to the sign directory
+cd sign
+
+# Setup a new Python environment to install the requirements into
+python -m venv venv
+source venv/bin/activate
+
+# Install the requirements
 pip install -r requirements.txt
 ```
 
@@ -47,6 +55,7 @@ options:
 The input to the script is a Geth keystore file <sup>[1](https://eips.ethereum.org/EIPS/eip-2335)</sup> <sup>[2](https://ethereum.org/en/developers/docs/data-structures-and-encoding/web3-secret-storage)</sup> and an optional keystore password. If you do not specify your keystore password on the command line, the script will ask for hidden input during execution.
 
 An example execution of the script would be:
+
 ```bash
 $ python sign.py \
 ~/keys/keystore-m_12345_1234_0_0_0-1234567890.json \
@@ -57,6 +66,7 @@ Public Key: 12345636d35753476269a8cd81c65b4433447f54b864b88cb73aca34b32cbfb73c6a
 Message: 566ab2123ad742e0928489b015aaf8
 Signature: 949999229999ab2123ad742e0928489b015aaf875f2530192837483f7a46839f90e0a6f16e54acbb71b2640bcfe005fa1673a2410f32ebe66b32995fd57f730d3c864b88cb73aca34b32cbfb73c6a9d3a83912337ccd89ad079a64122aa334cf
 ```
+
 The `.json` file is the filename of the validator keystore file, and `~/keys/password.txt` contains the password used during generation of the keystore file itself.
 
 > **Caution:** The `--showPK` flag is used to display the validator's private key on the command line. It should be used for verification and debugging purposes only. **NEVER** give the validator private key to anyone.
@@ -85,9 +95,17 @@ The script is written in Python and uses one external library written by the Eth
 
 1. The `web3` library, used to interface Ethereum: https://github.com/ethereum/web3.py
 
-You must first have Python installed. Then you must install the prerequisites. I generally use `pip` like so:
+You must first have Python installed. Then you must install the prerequisites. This can be done using `pip`:
 
 ```bash
+# Navigate to the register directory
+cd register
+
+# Setup a new Python environment to install the requirements into
+python -m venv venv
+source venv/bin/activate
+
+# Install the requirements
 pip install -r requirements.txt
 ```
 
@@ -129,21 +147,21 @@ An example execution of the script for a validator falling under OFAC juridictio
 
 ```bash
 $ python register.py \
-> http://127.0.0.1:8545/ \
-> 0x606A1cB03cED72Cb1C7D0cdCcb630eDba2eF6231 \
-> ~/proxy_contract_abi.json \
-> 12345636d35753476269a8cd81c65b4433447f54b864b88cb73aca34b32cbfb73c6a9d3a83912337ccd89ad0778112a0 \
-> 566ab2123ad742e0928489b015aaf8 \
-> 949999229999ab2123ad742e0928489b015aaf875f2530192837483f7a46839f90e0a6f16e54acbb71b2640bcfe005fa1673a2410f32ebe66b32995fd57f730d3c864b88cb73aca34b32cbfb73c6a9d3a83912337ccd89ad079a64122aa334cf \
-> 0x3b0DF1Ab7405F7e5235874900811328fB153dF0B \
-> true
-> --beneficiaryWalletPrivateKey "$(cat ~/private_key.txt)"
+http://127.0.0.1:8545/ \
+0x606A1cB03cED72Cb1C7D0cdCcb630eDba2eF6231 \
+~/proxy_contract_abi.json \
+12345636d35753476269a8cd81c65b4433447f54b864b88cb73aca34b32cbfb73c6a9d3a83912337ccd89ad0778112a0 \
+566ab2123ad742e0928489b015aaf8 \
+949999229999ab2123ad742e0928489b015aaf875f2530192837483f7a46839f90e0a6f16e54acbb71b2640bcfe005fa1673a2410f32ebe66b32995fd57f730d3c864b88cb73aca34b32cbfb73c6a9d3a83912337ccd89ad079a64122aa334cf \
+0x3b0DF1Ab7405F7e5235874900811328fB153dF0B \
+--ofacEnabled true
+--beneficiaryWalletPrivateKey "$(cat ~/private_key.txt)"
 
 Sending transactions to register validator...
 Transaction Hash: 0x11e3c325433bdf67c88b2466d074838249a80cbc3b041df14ce882c012241ad2
 ```
 
-The beneficiary wallet is used to sign registration transaction, and is also committed on chain as the wallet used to withdraw the MEV smoothing balance for the registered validator.
+The beneficiary wallet is used to sign the registration transaction, and is also committed on chain as the wallet used to withdraw the MEV smoothing balance for the registered validator.
 
 > **Caution:** The `--beneficiaryWalletPrivateKey` flag inputs a wallet's private key on the command line. Please understand the source code of this script and know what it is doing with your private key. In this script, it is used to sign the registration transaction, but you should verify that statement. Anyone with your private key can steal your crypto! **NEVER** give a private key to anyone.
 
@@ -151,4 +169,14 @@ The script will output the transaction receipt hash upon successful execution.
 
 #### Register using Etherscan
 
-(To be written)
+This is the easiest way to register a validator. You can use the Etherscan interface to register your validator and use any Web3 wallet to sign the transaction.
+
+**Steps:**
+
+1. Go to the contract tab on the [Unpool.fi Proxy Contract](https://goerli.etherscan.io/address/0x606A1cB03cED72Cb1C7D0cdCcb630eDba2eF6231#code) on Etherscan.
+2. Click on the `Write Contract` button.
+3. Connect your Web3 wallet.
+4. Enter the parameters output from the `sign.py` script into the `add_validator` function.
+5. Click on the `Write` button. This will open your Web3 wallet to sign the transaction.
+
+<img alt="Register using Etherscan" src="https://user-images.githubusercontent.com/86061486/219547456-8267cdca-69c4-4890-9615-d0f8afa07733.png" width="600" />
