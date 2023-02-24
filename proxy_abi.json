@@ -1,0 +1,181 @@
+[
+    {
+        "stateMutability": "nonpayable",
+        "type": "constructor",
+        "inputs": [
+            {
+                "name": "ofacVaultContractAddress",
+                "type": "address"
+            },
+            {
+                "name": "withdrawContractAddress",
+                "type": "address"
+            }
+        ],
+        "outputs": []
+    },
+    {
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "name": "set_admin_address",
+        "inputs": [
+            {
+                "name": "admin",
+                "type": "address"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ]
+    },
+    {
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "name": "set_ofac_vault_contract_address",
+        "inputs": [
+            {
+                "name": "newAddress",
+                "type": "address"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ]
+    },
+    {
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "name": "set_withdraw_contract_address",
+        "inputs": [
+            {
+                "name": "newAddress",
+                "type": "address"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ]
+    },
+    {
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "name": "destroy_contract",
+        "inputs": [],
+        "outputs": []
+    },
+    {
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "name": "add_validator",
+        "inputs": [
+            {
+                "name": "validatorPublicKey",
+                "type": "bytes"
+            },
+            {
+                "name": "validatorSignedMessage",
+                "type": "bytes"
+            },
+            {
+                "name": "validatorSignature",
+                "type": "bytes"
+            },
+            {
+                "name": "isOfacCompliant",
+                "type": "bool"
+            }
+        ],
+        "outputs": []
+    },
+    {
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "name": "remove_validator",
+        "inputs": [
+            {
+                "name": "validatorPublicKey",
+                "type": "bytes"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ]
+    },
+    {
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "name": "withdraw",
+        "inputs": [
+            {
+                "name": "amount",
+                "type": "uint256"
+            }
+        ],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256"
+            }
+        ]
+    },
+    {
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "name": "withdraw_all",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256"
+            }
+        ]
+    },
+    {
+        "stateMutability": "view",
+        "type": "function",
+        "name": "admin",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ]
+    },
+    {
+        "stateMutability": "view",
+        "type": "function",
+        "name": "ofacVaultContractAddress",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ]
+    },
+    {
+        "stateMutability": "view",
+        "type": "function",
+        "name": "withdrawContractAddress",
+        "inputs": [],
+        "outputs": [
+            {
+                "name": "",
+                "type": "address"
+            }
+        ]
+    }
+]
