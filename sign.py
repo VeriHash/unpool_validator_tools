@@ -56,18 +56,21 @@ def main(keystoreFilename, keystorePassword):
 def add_sign_args(parser):
     parser.add_argument('keystoreFilename', help='The Geth keystore v4 file.')
     parser.add_argument('--keystorePassword', default=None, help='The password used for encrypting the private keys.')
+    parser.add_argument('--noVerify', action='store_true', help='Set flag to disable signature verification. You might waste gas.')
     return parser
 
 
 if __name__ == '__main__':
 
     # Parse some command line arguments
-    d = 'Extract the public and private keys from a Geth keystore file in order to create a BLS signature.'
+    d = 'Extract the public and private keys from a Geth keystore file in order to create a BLS12-381 signature.'
     parser = argparse.ArgumentParser(description=d)
     parser = add_sign_args(parser)
     args = parser.parse_args()
 
+    # Generate the parameters we need to register a validator from the keystore file
     validatorPublicKey, message, signature = main(args.keystoreFilename, args.keystorePassword)
 
     # Verify the signature. It can fail if libraries aren't the corect versions.
-    verify_main(validatorPublicKey, message, signature)
+    if not args.noVerify:
+        verify_main(validatorPublicKey, message, signature)

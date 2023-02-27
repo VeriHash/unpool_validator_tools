@@ -3,7 +3,7 @@ import warnings
 
 from sign import main as sign_main, add_sign_args
 from verify import main as verify_main, add_verify_args
-from create_tx import main as create_tx_main, add_create_tx_args
+from transaction import main as create_tx_main, add_create_tx_args
 from broadcast import main as broadcast_main
 
 

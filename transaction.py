@@ -127,7 +127,8 @@ def main(validatorPublicKey, message, signature, ofacEnabled, beneficiaryWalletA
                               beneficiaryWalletAddress)
 
     # Get the beneficiary wallet's private key if it wasn't given on the CLI (will be hidden)
-    print()
+    if not beneficiaryWalletPrivateKey:
+        print()
     msg = ("Please enter the beneficary wallet's private key. (Caution, please understand the source "
            "code of this script and know what it is doing with your private key. It is used to sign "
            "the registration transaction, but you should verify that statement. Anyone with your "
@@ -189,10 +190,15 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=d)
     parser = add_verify_args(parser)
     parser = add_create_tx_args(parser)
+    # Add this here because it originally lives in sign_args.
+    parser.add_argument('--noVerify', action='store_true', help='Set flag to disable signature verification. You might waste gas.')
     args = parser.parse_args()
 
     # Verify the signature. It can fail if libraries aren't the corect versions.
-    verify_main(args.validatorPublicKey, args.message, args.signature)
+    if not args.noVerify:
+        verify_main(args.validatorPublicKey, args.message, args.signature)
+
+    # Create the transaction
     main(args.validatorPublicKey, args.message, args.signature, args.ofacEnabled,
          args.beneficiaryWalletAddress, args.beneficiaryWalletPrivateKey, args.endpoint,
          args.chain, args.nonce, args.proxyContractAbiFilename, args.gas, args.maxFeePerGas,

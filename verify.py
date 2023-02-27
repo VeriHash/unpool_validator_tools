@@ -37,7 +37,7 @@ def add_verify_args(parser):
 if __name__ == '__main__':
 
     # Parse some command line arguments
-    parser = argparse.ArgumentParser(description='Verify a BLS signed message')
+    parser = argparse.ArgumentParser(description='Verify a BLS12-381 signed message')
     parser = add_verify_args(parser)
     args = parser.parse_args()
 
