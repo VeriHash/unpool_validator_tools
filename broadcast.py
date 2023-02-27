@@ -12,6 +12,14 @@ def broadcast(w3, signedTx):
     return w3.eth.wait_for_transaction_receipt(txHash)
 
 
+def main(w3, signedTx):
+    # Send the transaction
+    print()
+    print('Sending validator registration transaction...')
+    receipt = broadcast(w3, signedTx)
+    print(f'Transaction Hash: {receipt.transactionHash.hex()}')
+
+
 if __name__ == '__main__':
 
     # Parse some command line arguments
@@ -23,8 +31,4 @@ if __name__ == '__main__':
     # Create the web3 endpoint
     w3 = Web3(Web3.HTTPProvider(args.endpoint))
 
-    # Send the transaction
-    print()
-    print('Sending validator registration transaction...')
-    receipt = broadcast(w3, args.signedTx)
-    print(f'Transaction Hash: {receipt.transactionHash.hex()}')
+    main(w3, args.signedTx)

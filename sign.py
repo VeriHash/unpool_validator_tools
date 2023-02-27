@@ -13,7 +13,7 @@ import uuid
 from py_ecc.bls import G2ProofOfPossession
 from staking_deposit.key_handling.keystore import Keystore
 
-from verify import verify
+from verify import main as verify_main
 
 
 def sign(filename, password):
@@ -35,31 +35,39 @@ def sign(filename, password):
     return keystore.pubkey, message.hex(), bytes(signature).hex()
 
 
+def main(keystoreFilename, keystorePassword):
+
+    # Get the password if it wasn't given on the CLI (will be hidden)
+    ksPassword = keystorePassword or getpass.getpass('Please enter the keystore decryption password: ')
+
+    # Let's sign!
+    validatorPublicKey, message, signature = sign(keystoreFilename, ksPassword)
+
+    # We need this information for the contract, and it needs to be hex encoded.
+    print()
+    print('Enter the following information into the mev smoothing contract:')
+    print('Validator Public Key:', validatorPublicKey)
+    print('Message:', message)
+    print('Signature:', signature)
+
+    return validatorPublicKey, message, signature
+
+
+def add_sign_args(parser):
+    parser.add_argument('keystoreFilename', help='The Geth keystore v4 file.')
+    parser.add_argument('--keystorePassword', default=None, help='The password used for encrypting the private keys.')
+    return parser
+
+
 if __name__ == '__main__':
 
     # Parse some command line arguments
     d = 'Extract the public and private keys from a Geth keystore file in order to create a BLS signature.'
     parser = argparse.ArgumentParser(description=d)
-    parser.add_argument('filename', help='The Geth keystore v4 file.')
-    parser.add_argument('--password', default=None, help='The password used for encrypting the private keys.')
+    parser = add_sign_args(parser)
     args = parser.parse_args()
 
-    # Get the password if it wasn't given on the CLI (will be hidden)
-    password = args.password or getpass.getpass('Please enter the keystore decryption password: ')
-
-    # Let's sign!
-    publicKey, message, signature = sign(args.filename, password)
-
-    # We need this information for the contract, and it needs to be hex encoded.
-    print()
-    print('Enter the following information into the mev smoothing contract:')
-    print('Public Key:', publicKey)
-    print('Message:', message)
-    print('Signature:', signature)
+    validatorPublicKey, message, signature = main(args.keystoreFilename, args.keystorePassword)
 
     # Verify the signature. It can fail if libraries aren't the corect versions.
-    isValid = verify(publicKey, message, signature)
-    print()
-    print(f'Is the signature valid? {isValid}')
-    if not isValid:
-        raise RuntimeError('Signature invalid!')
+    verify_main(validatorPublicKey, message, signature)
