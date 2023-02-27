@@ -53,7 +53,7 @@ Raw signed transaction:
 0x02f90214058204<snip>173bd94b151380bbe9
 ```
 
-Offline, beneficiary wallet private key specified via `--beneficiaryWalletPrivateKey` and signature verification disabled via `--noVerify`.
+Offline, beneficiary wallet private key specified via `--beneficiaryWalletPrivateKey` and signature verification disabled via `--noVerify`. Will still download the contract via unpool.fi.
 ```
 $ python transaction.py 864d6e36d35753476269a8cd81c65bc8b1847f54b864b88cb73aca0d3d2cbfb73c6a9d396c39e7b7ccd89ad07786c660 3a7294e3539848c1bd68808cba87b076 ad21bf340f2748725c43ee1ada80a675c153bcb144aab31fba8418b902abe989d842f3e876228fb13852ae8606404234143309360ddcde5674c96dc087662bd363da53d47545fb15bfeb4f1fe05c6bb58568b1fb308e2ff4f338ccb20056a0fd True 0x123456 --nonce 123456 --beneficiaryWalletPrivateKey $(cat ~/private_key.txt) --noVerify
 
@@ -61,6 +61,20 @@ You have not specified an execution layer JSON RPC endpoint. Setting offline mod
 
 Raw signed transaction:
 0x02f90214058204<snip>173bd94b151380bbe9
+```
+
+Offline, same as above, but not even an internet connection, like in an air-gapped environment. We
+have to specify the proxy contract ABI filename via `--proxyContractAbiFilename`. We will have had
+to download it beforehand from https://unpool.fi/contracts/proxy_abi.json or use the one in this
+repository.
+
+```
+$ python transaction.py 864d6e36d35753476269a8cd81c65bc8b1847f54b864b88cb73aca0d3d2cbfb73c6a9d396c39e7b7ccd89ad07786c660 3a7294e3539848c1bd68808cba87b076 ad21bf340f2748725c43ee1ada80a675c153bcb144aab31fba8418b902abe989d842f3e876228fb13852ae8606404234143309360ddcde5674c96dc087662bd363da53d47545fb15bfeb4f1fe05c6bb58568b1fb308e2ff4f338ccb20056a0fd True 0x123456 --nonce 123456 --beneficiaryWalletPrivateKey $(cat ~/private_key.txt) --proxyContractAbiFilename proxy_abi.json --noVerify
+
+You have not specified an execution layer JSON RPC endpoint. Setting offline mode.
+
+Raw signed transaction:
+0x02f90215058<snip>65f14e5
 ```
 
 Online, beneficiary wallet private key specified via `--beneficiaryWalletPrivateKey` and signature verification disabled via `--noVerify`. Notice we need to specify `--endpoint` to enable online mode.
