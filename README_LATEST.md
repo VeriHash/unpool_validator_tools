@@ -1,5 +1,45 @@
 ## Run `main.py`, which does everything
 
+### Online
+
+```
+$ python main.py reference/v4_scrypt.json yes 0x123456 --keystorePassword $(cat reference/v4_password.txt) --beneficiaryWalletPrivateKey $(cat ~/private_key.txt) --endpoint http://127.0.0.1:8545
+
+Is the signature valid? True
+
+Using execution layer JSON RPC endpoint. Setting online mode.
+
+Raw signed transaction:
+0x02f90213058208ef84038<snipd68eb3d55bed887
+
+Sending validator registration transaction...
+Transaction Hash: 0x9e2a1a66afa8b62d5e26085a46f787593d24ffdaf4215267a07b4172828b94ae
+```
+
+### No chain interactions, but with contract ABI download
+
+```
+$ python main.py reference/v4_scrypt.json yes 0x123456 --keystorePassword $(cat reference/v4_password.txt) --beneficiaryWalletPrivateKey $(cat ~/private_key.txt) --nonce 2288
+
+Is the signature valid? True
+
+You have not specified an execution layer JSON RPC endpoint. Setting offline mode.
+
+Raw signed transaction:
+0x02f90214058208f0840525<snip>ffde85442aad63d6f194bea3
+```
+
+### No chain interactions, no contract ABI download, and no signature verification
+
+```
+$ python main.py reference/v4_scrypt.json yes 0x123456 --keystorePassword $(cat reference/v4_password.txt) --beneficiaryWalletPrivateKey $(cat ~/private_key.txt) --nonce 2288 --proxyContractAbiFilename proxy_abi.json --noVerify
+
+You have not specified an execution layer JSON RPC endpoint. Setting offline mode.
+
+Raw signed transaction:
+0x02f90214058<snip>497ac241097f14
+```
+
 ## Or, run the scripts individually
 
 You can also run each section of the registration individually, in order to have more control over
@@ -79,7 +119,7 @@ Raw signed transaction:
 
 Online, beneficiary wallet private key specified via `--beneficiaryWalletPrivateKey` and signature verification disabled via `--noVerify`. Notice we need to specify `--endpoint` to enable online mode.
 ```
-$ python transaction.py 364d6e36d35753476269a8cd81c65bc8b1847f54b864b88cb73aca0d3d2cbfb73c6a9d396c39e7b7ccd89ad07786c660 437294e3539848c1bd68808cba87b076 3421bf340f2748725c43ee1ada80a675c153bcb144aab31fba8418b902abe989d842f3e876228fb13852ae8606404234143309360ddcde5674c96dc087662bd363da53d47545fb15bfeb4f1fe05c6bb58568b1fb308e2ff4f338ccb20056a0fd True 0x5b0DF4Ab7905F7e5098865900819188fA153dD0D --endpoint http://127.0.0.1:8545 --beneficiaryWalletPrivateKey $(cat ~/private_key.txt) --noVerify
+$ python transaction.py 364d6e36d35753476269a8cd81c65bc8b1847f54b864b88cb73aca0d3d2cbfb73c6a9d396c39e7b7ccd89ad07786c660 437294e3539848c1bd68808cba87b076 3421bf340f2748725c43ee1ada80a675c153bcb144aab31fba8418b902abe989d842f3e876228fb13852ae8606404234143309360ddcde5674c96dc087662bd363da53d47545fb15bfeb4f1fe05c6bb58568b1fb308e2ff4f338ccb20056a0fd True 0x123456 --endpoint http://127.0.0.1:8545 --beneficiaryWalletPrivateKey $(cat ~/private_key.txt) --noVerify
 
 Using execution layer JSON RPC endpoint. Setting online mode.
 

@@ -41,16 +41,7 @@ def main(keystoreFilename, keystorePassword):
     ksPassword = keystorePassword or getpass.getpass('Please enter the keystore decryption password: ')
 
     # Let's sign!
-    validatorPublicKey, message, signature = sign(keystoreFilename, ksPassword)
-
-    # We need this information for the contract, and it needs to be hex encoded.
-    print()
-    print('Enter the following information into the mev smoothing contract:')
-    print('Validator Public Key:', validatorPublicKey)
-    print('Message:', message)
-    print('Signature:', signature)
-
-    return validatorPublicKey, message, signature
+    return sign(keystoreFilename, ksPassword)
 
 
 def add_sign_args(parser):
@@ -70,6 +61,13 @@ if __name__ == '__main__':
 
     # Generate the parameters we need to register a validator from the keystore file
     validatorPublicKey, message, signature = main(args.keystoreFilename, args.keystorePassword)
+
+    # We need this information for the contract, and it needs to be hex encoded.
+    print()
+    print('Enter the following information into the mev smoothing contract:')
+    print('Validator Public Key:', validatorPublicKey)
+    print('Message:', message)
+    print('Signature:', signature)
 
     # Verify the signature. It can fail if libraries aren't the corect versions.
     if not args.noVerify:
