@@ -1,4 +1,5 @@
 # References:
+# https://eips.ethereum.org/EIPS/eip-2335
 # https://github.com/ethereum/staking-deposit-cli/blob/master/staking_deposit/key_handling/keystore.py
 # https://github.com/ethereum/py_ecc
 # https://github.com/Chia-Network/bls-signatures/tree/main/python-bindings#creating-keys-and-signatures
@@ -8,6 +9,7 @@
 
 import argparse
 import getpass
+import json
 import uuid
 
 from py_ecc.bls import G2ProofOfPossession
@@ -16,10 +18,10 @@ from staking_deposit.key_handling.keystore import Keystore
 from verify import main as verify_main
 
 
-def sign(filename, password):
+def sign(content, password):
 
     # Load the keystore JSON, which contains the validator information.
-    keystore = Keystore.from_file(filename)
+    keystore = Keystore.from_json(json.loads(content))
 
     # Decrypt the keystore with the password to get the private key, used to sign a message.
     privateKey = keystore.decrypt(password)
@@ -35,17 +37,17 @@ def sign(filename, password):
     return keystore.pubkey, message.hex(), bytes(signature).hex()
 
 
-def main(keystoreFilename, keystorePassword):
+def main(keystoreContent, keystorePassword):
 
     # Get the password if it wasn't given on the CLI (will be hidden)
     ksPassword = keystorePassword or getpass.getpass('Please enter the keystore decryption password: ')
 
     # Let's sign!
-    return sign(keystoreFilename, ksPassword)
+    return sign(keystoreContent, ksPassword)
 
 
 def add_sign_args(parser):
-    parser.add_argument('keystoreFilename', help='The Geth keystore v4 file.')
+    parser.add_argument('keystoreContent', help='The BLS12-381 keystore v4 file content.')
     parser.add_argument('--keystorePassword', default=None, help='The password used for encrypting the private keys.')
     parser.add_argument('--noVerify', action='store_true', help='Set flag to disable signature verification. You might waste gas.')
     return parser
@@ -54,13 +56,13 @@ def add_sign_args(parser):
 if __name__ == '__main__':
 
     # Parse some command line arguments
-    d = 'Extract the public and private keys from a Geth keystore file in order to create a BLS12-381 signature.'
+    d = 'Extract the public and private keys from a BLS12-381 keystore file in order to create a BLS12-381 signature.'
     parser = argparse.ArgumentParser(description=d)
     parser = add_sign_args(parser)
     args = parser.parse_args()
 
     # Generate the parameters we need to register a validator from the keystore file
-    validatorPublicKey, message, signature = main(args.keystoreFilename, args.keystorePassword)
+    validatorPublicKey, message, signature = main(args.keystoreContent, args.keystorePassword)
 
     # We need this information for the contract, and it needs to be hex encoded.
     print()

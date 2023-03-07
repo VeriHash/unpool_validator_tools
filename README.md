@@ -10,11 +10,35 @@ There are two steps to registering a validator with Unpool.fi:
 
 2. The second step is requesting validator registration with Unpool.fi's MEV smoothing contracts. The signed message generated from step 1, along with the validator public key, are sent to Unpool.fi's MEV smoothing contracts as an Ethereum transaction. The transaction is signed using a wallet of your choice, which is also used to withdraw the funds (known throughout Unpool.fi's documentation and code as the "beneficiary wallet").
 
-### Step 1 - Generate The Signed Message
+The scripts within this repository will generate a signature. If you would like, the scripts can also broadcast the transaction to the chain. You can either run everything via the "main" script, or run them individually. You can run the scripts online, partially offline, and fully offline.
 
-The [`sign.py`](sign/sign.py) script in the [`/sign`](sign) directory of this repository contains a Python script which will generate a BLS12-381 signature on random message content. The script must be run wherever the validator keystore file is stored.
+When running fully online with a specified JSON RPC endpoint, the script will broadcast the transaction to the specified Ethereum chain (mainnet or Goerli supported). When running partially offline, the script will download the Unpool proxy contract ABI, which is required to generate an offline signed transaction. When running fully offline, you are required to have the proxy contract ABI. Then, the script will generate a signed transaction for you. You can take the signed transaction and broadcast it via something like Etherscan.
 
-##### Prerequisites
+If you would like, you can also just run the "sign" step and copy/paste the output into the proxy contract via Etherscan, and skip all the other steps.
+
+## Run via Docker
+
+### Build the image
+
+```
+$ sudo -E docker build -t unpool.main -f main.dockerfile .
+```
+
+### Run the main docker image
+
+#### Online
+
+```
+$ sudo -E docker run --rm -i unpool.main "$(cat reference/v4_scrypt.json)" yes "$(cat ~/wallet.txt)" --keystorePassword $(cat reference/v4_password.txt) --beneficiaryWalletPrivateKey $(cat ~/private_key.txt) --endpoint http://127.0.0.1:8545
+```
+
+#### Offline
+
+```
+$ sudo -E docker run --rm -i unpool.main "$(cat reference/v4_scrypt.json)" yes "$(cat ~/wallet.txt)" --keystorePassword $(cat reference/v4_password.txt) --beneficiaryWalletPrivateKey $(cat ~/private_key.txt) --nonce <walletNonce> --proxyContractAbiFilename proxy_abi.json --noVerify
+```
+
+## Run via Python
 
 The script is written in Python and uses two external libraries written by the Ethereum Foundation:
 
@@ -27,39 +51,81 @@ You must first have Python installed. Then you must install the prerequisites. I
 pip install -r requirements.txt
 ```
 
-##### Execution
+### Run `main.py`, which does everything
 
-```bash
-$ python sign.py -h
-usage: sign.py [-h] [--password PASSWORD] [--showPK] filename
+#### Online
 
-Extract the public and private keys from a Geth keystore file in order to create a BLS sigature.
+```
+$ python main.py "$(cat reference/v4_scrypt.json)" yes 0x123456 --keystorePassword $(cat reference/v4_password.txt) --beneficiaryWalletPrivateKey $(cat ~/private_key.txt) --endpoint http://127.0.0.1:8545
 
-positional arguments:
-  filename             The Geth keystore v4 file.
+Is the signature valid? True
 
-options:
-  -h, --help           show this help message and exit
-  --password PASSWORD  The password used for encrypting the private keys.
-  --showPK             Set if you want to show the private key
+Using execution layer JSON RPC endpoint. Setting online mode.
+
+Raw signed transaction:
+0x02f90213058208ef84038<snipd68eb3d55bed887
+
+Sending validator registration transaction...
+Transaction Hash: 0x9e2a1a66afa8b62d5e26085a46f787593d24ffdaf4215267a07b4172828b94ae
 ```
 
-The input to the script is a Geth keystore file <sup>[1](https://eips.ethereum.org/EIPS/eip-2335)</sup> <sup>[2](https://ethereum.org/en/developers/docs/data-structures-and-encoding/web3-secret-storage)</sup> and an optional keystore password. If you do not specify your keystore password on the command line, the script will ask for hidden input during execution.
+#### No chain interactions, but with contract ABI download
 
-An example execution of the script would be:
-```bash
-$ python sign.py \
-~/keys/keystore-m_12345_1234_0_0_0-1234567890.json \
---password "$(cat ~/keys/password.txt)"
+```
+$ python main.py "$(cat reference/v4_scrypt.json)" yes 0x123456 --keystorePassword $(cat reference/v4_password.txt) --beneficiaryWalletPrivateKey $(cat ~/private_key.txt) --nonce 2288
+
+Is the signature valid? True
+
+You have not specified an execution layer JSON RPC endpoint. Setting offline mode.
+
+Raw signed transaction:
+0x02f90214058208f0840525<snip>ffde85442aad63d6f194bea3
+```
+
+#### No chain interactions, no contract ABI download, and no signature verification
+
+```
+$ python main.py "$(cat reference/v4_scrypt.json)" yes 0x123456 --keystorePassword $(cat reference/v4_password.txt) --beneficiaryWalletPrivateKey $(cat ~/private_key.txt) --nonce 2288 --proxyContractAbiFilename proxy_abi.json --noVerify
+
+You have not specified an execution layer JSON RPC endpoint. Setting offline mode.
+
+Raw signed transaction:
+0x02f90214058<snip>497ac241097f14
+```
+
+### Or, run the scripts individually
+
+You can also run each section of the registration individually, in order to have more control over
+what is happening, or to learn what is going on internally.
+
+#### Sign A Message
+
+The input to the script is the contents of a Geth keystore file <sup>[1](https://eips.ethereum.org/EIPS/eip-2335)</sup> <sup>[2](https://ethereum.org/en/developers/docs/data-structures-and-encoding/web3-secret-storage)</sup> and an optional keystore password. If you do not specify your keystore password on the command line, the script will ask for hidden input during execution.
+
+Default:
+```
+$ python sign.py "$(cat reference/v4_pbkdf2.json)" --keystorePassword $(cat reference/v4_password.txt)
 
 Enter the following information into the mev smoothing contract:
-Public Key: 12345636d35753476269a8cd81c65b4433447f54b864b88cb73aca34b32cbfb73c6a9d3a83912337ccd89ad0778112a0
-Message: 566ab2123ad742e0928489b015aaf8
-Signature: 949999229999ab2123ad742e0928489b015aaf875f2530192837483f7a46839f90e0a6f16e54acbb71b2640bcfe005fa1673a2410f32ebe66b32995fd57f730d3c864b88cb73aca34b32cbfb73c6a9d3a83912337ccd89ad079a64122aa334cf
-```
-The `.json` file is the filename of the validator keystore file, and `~/keys/password.txt` contains the password used during generation of the keystore file itself.
+Validator Public Key: 9612d7a727c9d0a22e185a1c768478dfe919cada9266988cb32359c11f2b7b27f4ae4040902382ae2910c15e2b420d07
+Message: a31fd2712cac4fafa88812f261a9aad6
+Signature: a3dddad29ea181db77a49287f880263f0a360bbcb9d3992f4e766e8dbd85eeb16713ae9c22b62792ee0d578ed6b3822b0b703f6f816e091ddcdc1e381cd24267ecc8a9d3a00ef56edff7dd4710730e3a5ac533877b209dea840476076fe721dc
 
-> **Caution:** The `--showPK` flag is used to display the validator's private key on the command line. It should be used for verification and debugging purposes only. **NEVER** give the validator private key to anyone.
+Is the signature valid? True
+```
+
+With `--noVerify`, if you don't care about signature verification.
+
+```
+$ python sign.py "$(cat reference/v4_pbkdf2.json)" --keystorePassword $(cat reference/v4_password.txt) --noVerify
+
+Enter the following information into the mev smoothing contract:
+Validator Public Key: 9612d7a727c9d0a22e185a1c768478dfe919cada9266988cb32359c11f2b7b27f4ae4040902382ae2910c15e2b420d07
+Message: b42586ce27814d3e80d8ae0e27839cbd
+Signature: b7b6c193b6a40254325f079bbe3cc1c92eb8c58066e5b7a0f231947c9d3b93f1519b9de0e008035624373ac317f28d4b1112e689b388d88976141a05b0ac91236769cf00432ef11bca0c9364725184b97a15ea68b0a5676d2e77b8801d2b23a4
+```
+
+The `reference/v4_pbkdf2.json` file is the validator keystore file. We give the contents of the file to the script so we don't' have to mount a filesystem during Docker execution. The `reference/v4_password.txt` contains the password used during generation of the keystore file itself.
 
 The password is used to decrypt the validator's private key from the keystore file and use it to sign a message. The message contents are not important; only the proof of ownership of the validator is important.
 
@@ -69,86 +135,88 @@ The script will output the required information used during validator registrati
 2. The signed message
 3. The signature used to sign the message
 
-### Step 2 - Register The Validator
+#### Verify The Signature
+
+Verifying the signature if handy if you want to save gas. It runs the same code as the Oracle uses to verify signatures.
+
+```
+$ python verify.py 9612d7a727c9d0a22e185a1c768478dfe919cada9266988cb32359c11f2b7b27f4ae4040902382ae2910c15e2b420d07 b42586ce27814d3e80d8ae0e27839cbd b7b6c193b6a40254325f079bbe3cc1c92eb8c58066e5b7a0f231947c9d3b93f1519b9de0e008035624373ac317f28d4b1112e689b388d88976141a05b0ac91236769cf00432ef11bca0c9364725184b97a15ea68b0a5676d2e77b8801d2b23a4
+
+Is the signature valid? True
+```
+
+#### Create Registration Transaction
 
 There are multiple ways to register a validator, but in the end, they all call the `add_validator` function of the Unpool.fi MEV pool [Proxy Contract](https://goerli.etherscan.io/address/0x606A1cB03cED72Cb1C7D0cdCcb630eDba2eF6231#code).
 
 > **Caution:** However you register your validator, ensure you are calling the Unpool.fi Proxy Contract at the address `0x606A1cB03cED72Cb1C7D0cdCcb630eDba2eF6231`.
 
-#### Register using `register/register.py`
-
-The [`register.py`](`register/register.py`) script in the [`/register`](register) directory of this repository will add your validator to the registration queue. You need to have a Web3 JSON RPC endpoint available for interacting with the chain.
-
-##### Prerequisites
-
-The script is written in Python and uses one external library written by the Ethereum Foundation:
-
-1. The `web3` library, used to interface Ethereum: https://github.com/ethereum/web3.py
-
-You must first have Python installed. Then you must install the prerequisites. I generally use `pip` like so:
-
-```bash
-pip install -r requirements.txt
-```
-
-##### Execution
-
-```bash
-$ python register.py -h
-usage: register.py [-h] [--beneficiaryWalletPrivateKey BENEFICIARYWALLETPRIVATEKEY] endpoint proxyContractAddress proxyContractABIFilename publicKey message signature beneficiaryWalletAddress
-
-Queue a validator for registration with Unpool.fi's MEV smoothing contracts
-
-positional arguments:
-  endpoint              The Execution Layer JSON RPC endpoint
-  proxyContractAddress  The address of the proxy contract used for registration
-  proxyContractABIFilename
-                        The filename of the JSON-formatted ABI of the proxy contract
-  publicKey             The validator's public key
-  message               The message signed by the validator, from `sign.py`
-  signature             The signature used to sign the message, from `sign.py`
-  beneficiaryWalletAddress
-                        The wallet allowed to withdraw your balance
-
-options:
-  -h, --help            show this help message and exit
-  --beneficiaryWalletPrivateKey BENEFICIARYWALLETPRIVATEKEY
-                        The private key of the beneficiary wallet
-  --ofacEnabled         Set this flag if you fall under OFAC jurisdiction
-```
-
-To execute the registration script you must have a working Web3 JSON RPC endpoint, information about the Proxy Contract, the output of a `sign.py` run, and beneficiary wallet credentials.
-
-- The Execution Layer JSON RPC endpoint might be from [Infura](https://www.infura.io/) or a locally running Geth endpoint. Usually it is run on port 8545.
-- The proxy contract address is `0x606A1cB03cED72Cb1C7D0cdCcb630eDba2eF6231`
-- You can get the Proxy contract's ABI from Etherscan: https://goerli.etherscan.io/address/0x606A1cB03cED72Cb1C7D0cdCcb630eDba2eF6231#code. Export the JSON or copy/paste into a file on your system.
-- The `publicKey`, `message`, and `signature` are the outputs from the script `sign/sign.py`, located in this repository.
-- The `beneficiaryWalletAddress` and `beneficiaryWalletPrivateKey` are the address and private key of the wallet which will be used to withdraw that validator's MEV balance at a later date.
-
-An example execution of the script for a validator falling under OFAC juridiction would be:
-
-```bash
-$ python register.py \
-> http://127.0.0.1:8545/ \
-> 0x606A1cB03cED72Cb1C7D0cdCcb630eDba2eF6231 \
-> ~/proxy_contract_abi.json \
-> 12345636d35753476269a8cd81c65b4433447f54b864b88cb73aca34b32cbfb73c6a9d3a83912337ccd89ad0778112a0 \
-> 566ab2123ad742e0928489b015aaf8 \
-> 949999229999ab2123ad742e0928489b015aaf875f2530192837483f7a46839f90e0a6f16e54acbb71b2640bcfe005fa1673a2410f32ebe66b32995fd57f730d3c864b88cb73aca34b32cbfb73c6a9d3a83912337ccd89ad079a64122aa334cf \
-> 0x3b0DF1Ab7405F7e5235874900811328fB153dF0B \
-> true
-> --beneficiaryWalletPrivateKey "$(cat ~/private_key.txt)"
-
-Sending transactions to register validator...
-Transaction Hash: 0x11e3c325433bdf67c88b2466d074838249a80cbc3b041df14ce882c012241ad2
-```
+During the overall process we create a registration transaction. You can either broadcast the transaction to the chain yourself, or use the "broadcast" script to do it for you.
 
 The beneficiary wallet is used to sign registration transaction, and is also committed on chain as the wallet used to withdraw the MEV smoothing balance for the registered validator.
 
+Offline, beneficiary wallet private key not specified.
+```
+$ python transaction.py 864d6e36d35753476269a8cd81c65bc8b1847f54b864b88cb73aca0d3d2cbfb73c6a9d396c39e7b7ccd89ad07786c660 3a7294e3539848c1bd68808cba87b076 ad21bf340f2748725c43ee1ada80a675c153bcb144aab31fba8418b902abe989d842f3e876228fb13852ae8606404234143309360ddcde5674c96dc087662bd363da53d47545fb15bfeb4f1fe05c6bb58568b1fb308e2ff4f338ccb20056a0fd True 0x123456 --nonce 123456
+
+Is the signature valid? True
+
+Please enter the beneficary wallet's private key. (Caution, please understand the source code of this script and know what it is doing with your private key. It is used to sign the registration transaction, but you should verify that statement. Anyone with your private key can steal your crypto!):
+
+You have not specified an execution layer JSON RPC endpoint. Setting offline mode.
+
+Raw signed transaction:
+0x02f90214058204<snip>173bd94b151380bbe9
+```
+
+Offline, beneficiary wallet private key specified via `--beneficiaryWalletPrivateKey` and signature verification disabled via `--noVerify`. Will still download the contract via unpool.fi.
+
 > **Caution:** The `--beneficiaryWalletPrivateKey` flag inputs a wallet's private key on the command line. Please understand the source code of this script and know what it is doing with your private key. In this script, it is used to sign the registration transaction, but you should verify that statement. Anyone with your private key can steal your crypto! **NEVER** give a private key to anyone.
+
+```
+$ python transaction.py 864d6e36d35753476269a8cd81c65bc8b1847f54b864b88cb73aca0d3d2cbfb73c6a9d396c39e7b7ccd89ad07786c660 3a7294e3539848c1bd68808cba87b076 ad21bf340f2748725c43ee1ada80a675c153bcb144aab31fba8418b902abe989d842f3e876228fb13852ae8606404234143309360ddcde5674c96dc087662bd363da53d47545fb15bfeb4f1fe05c6bb58568b1fb308e2ff4f338ccb20056a0fd True 0x123456 --nonce 123456 --beneficiaryWalletPrivateKey $(cat ~/private_key.txt) --noVerify
+
+You have not specified an execution layer JSON RPC endpoint. Setting offline mode.
+
+Raw signed transaction:
+0x02f90214058204<snip>173bd94b151380bbe9
+```
+
+Offline, same as above, but not even an internet connection, like in an air-gapped environment. We
+have to specify the proxy contract ABI filename via `--proxyContractAbiFilename`. We will have had
+to download it beforehand from https://unpool.fi/contracts/proxy_abi.json or use the one in this
+repository.
+
+```
+$ python transaction.py 864d6e36d35753476269a8cd81c65bc8b1847f54b864b88cb73aca0d3d2cbfb73c6a9d396c39e7b7ccd89ad07786c660 3a7294e3539848c1bd68808cba87b076 ad21bf340f2748725c43ee1ada80a675c153bcb144aab31fba8418b902abe989d842f3e876228fb13852ae8606404234143309360ddcde5674c96dc087662bd363da53d47545fb15bfeb4f1fe05c6bb58568b1fb308e2ff4f338ccb20056a0fd True 0x123456 --nonce 123456 --beneficiaryWalletPrivateKey $(cat ~/private_key.txt) --proxyContractAbiFilename proxy_abi.json --noVerify
+
+You have not specified an execution layer JSON RPC endpoint. Setting offline mode.
+
+Raw signed transaction:
+0x02f90215058<snip>65f14e5
+```
+
+Online, beneficiary wallet private key specified via `--beneficiaryWalletPrivateKey` and signature verification disabled via `--noVerify`. Notice we need to specify `--endpoint` to enable online mode.
+```
+$ python transaction.py 364d6e36d35753476269a8cd81c65bc8b1847f54b864b88cb73aca0d3d2cbfb73c6a9d396c39e7b7ccd89ad07786c660 437294e3539848c1bd68808cba87b076 3421bf340f2748725c43ee1ada80a675c153bcb144aab31fba8418b902abe989d842f3e876228fb13852ae8606404234143309360ddcde5674c96dc087662bd363da53d47545fb15bfeb4f1fe05c6bb58568b1fb308e2ff4f338ccb20056a0fd True 0x123456 --endpoint http://127.0.0.1:8545 --beneficiaryWalletPrivateKey $(cat ~/private_key.txt) --noVerify
+
+Using execution layer JSON RPC endpoint. Setting online mode.
+
+Raw signed transaction:
+0x02f90214058204<snip>173bd94b151380bbe9
+```
+
+#### Broadcast The Transaction
+
+To broadcast the registration you must have a working Web3 JSON RPC endpoint.
+
+The Execution Layer JSON RPC endpoint might be from [Infura](https://www.infura.io/) or a locally running Geth endpoint. Usually it is run on port 8545.
 
 The script will output the transaction receipt hash upon successful execution.
 
-#### Register using Etherscan
+```
+$ python broadcast.py http://127.0.0.1:8545 0x02f90214058208c584<snip>3642529f9661b
 
-(To be written)
+Sending validator registration transaction...
+Transaction Hash: 0xefa77a809d11dcfc70c91629dd41073ff3c987c275c6018294da04c66fbda895
+```

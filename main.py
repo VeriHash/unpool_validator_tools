@@ -35,7 +35,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Generate the parameters we need to register a validator from the keystore file
-    validatorPublicKey, message, signature = sign_main(args.keystoreFilename, args.keystorePassword)
+    validatorPublicKey, message, signature = sign_main(args.keystoreContent, args.keystorePassword)
 
     # Verify the signature if requested. It can fail if libraries aren't the corect versions.
     if not args.noVerify:
