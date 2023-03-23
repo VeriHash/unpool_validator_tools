@@ -12,7 +12,7 @@ import getpass
 import json
 import uuid
 
-from py_ecc.bls import G2ProofOfPossession
+from py_ecc.bls import G2Basic
 from staking_deposit.key_handling.keystore import Keystore
 
 from verify import main as verify_main
@@ -31,7 +31,7 @@ def sign(content, password):
     message = uuid.uuid4().bytes
 
     # Sign using BLS12-381 curve
-    signature = G2ProofOfPossession.Sign(int.from_bytes(privateKey, 'big'), message)
+    signature = G2Basic.Sign(int.from_bytes(privateKey, 'big'), message)
 
     # Return the public key, the message, and the signature
     return keystore.pubkey, message.hex(), bytes(signature).hex()

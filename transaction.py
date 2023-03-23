@@ -35,14 +35,17 @@ def create_tx_online(w3, contract, validatorPublicKey, message, signature, isOfa
                      beneficiaryWalletAddress):
 
     # Create a regular function call
-    fnCall = contract.functions.add_validator(validatorPublicKey, message, signature, isOfac)
+    fnCall = contract.functions.add_validator(bytes.fromhex(validatorPublicKey),
+                                              bytes.fromhex(message),
+                                              bytes.fromhex(signature),
+                                              isOfac)
 
     # Since we are online we can build the transaction which will estimate gas.
     txArgs = {
         'from': beneficiaryWalletAddress,
         'nonce': w3.eth.get_transaction_count(beneficiaryWalletAddress),
     }
-    return fnCall.buildTransaction(txArgs)
+    return fnCall.build_transaction(txArgs)
 
 
 def create_tx_offline(w3, contract, validatorPublicKey, message, signature, isOfac, chain, nonce,
@@ -51,14 +54,17 @@ def create_tx_offline(w3, contract, validatorPublicKey, message, signature, isOf
 
     # Since we are offline we need to manually generate the txConstruct. We need data.
     data = contract.encodeABI(fn_name='add_validator',
-                              args=[validatorPublicKey, message, signature, isOfac])
+                              args=[bytes.fromhex(validatorPublicKey),
+                                    bytes.fromhex(message),
+                                    bytes.fromhex(signature),
+                                    isOfac])
 
-    # We manually create the transaction args, usually produced by fnCall.buildTransaction
+    # We manually create the transaction args, usually produced by fnCall.build_transaction
     return {
         'value': 0,
         'gas': gas,
-        'maxPriorityFeePerGas': w3.toWei(maxPriorityFeePerGas, 'gwei'),
-        'maxFeePerGas': w3.toWei(maxFeePerGas, 'gwei'),
+        'maxPriorityFeePerGas': w3.to_wei(maxPriorityFeePerGas, 'gwei'),
+        'maxFeePerGas': w3.to_wei(maxFeePerGas, 'gwei'),
         'to': contract.address,
         'data': data,
         'nonce': nonce,
@@ -68,7 +74,7 @@ def create_tx_offline(w3, contract, validatorPublicKey, message, signature, isOf
 
 def load_contract(w3, abi, address=CONTRACT_ADDRESS):
 
-    return w3.eth.contract(address=w3.toChecksumAddress(address), abi=abi)
+    return w3.eth.contract(address=w3.to_checksum_address(address), abi=abi)
 
 
 def create_signed_transaction(w3, tx, beneficiaryWalletPrivateKey):

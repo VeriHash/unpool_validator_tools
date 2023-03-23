@@ -18,7 +18,9 @@ If you would like, you can also just run the "sign" step and copy/paste the outp
 
 ## Run via Docker
 
-### Build the image
+### Build the main image
+
+You probably just want to build and run the main image. Here is the command to do so:
 
 ```
 $ sudo -E docker build -t unpool.main -f main.dockerfile .
@@ -28,8 +30,10 @@ $ sudo -E docker build -t unpool.main -f main.dockerfile .
 
 #### Online
 
+We need to use the host network in order to reference a locally forwarded endpoint. Use whatever Docker network config you'd like.
+
 ```
-$ sudo -E docker run --rm -i unpool.main "$(cat reference/v4_scrypt.json)" yes "$(cat ~/wallet.txt)" --keystorePassword $(cat reference/v4_password.txt) --beneficiaryWalletPrivateKey $(cat ~/private_key.txt) --endpoint http://127.0.0.1:8545
+$ sudo -E docker run --rm -i --network host unpool.main "$(cat reference/v4_scrypt.json)" yes "$(cat ~/wallet.txt)" --keystorePassword $(cat reference/v4_password.txt) --beneficiaryWalletPrivateKey $(cat ~/private_key.txt) --endpoint http://127.0.0.1:8545
 ```
 
 #### Offline
@@ -38,11 +42,35 @@ $ sudo -E docker run --rm -i unpool.main "$(cat reference/v4_scrypt.json)" yes "
 $ sudo -E docker run --rm -i unpool.main "$(cat reference/v4_scrypt.json)" yes "$(cat ~/wallet.txt)" --keystorePassword $(cat reference/v4_password.txt) --beneficiaryWalletPrivateKey $(cat ~/private_key.txt) --nonce <walletNonce> --proxyContractAbiFilename proxy_abi.json --noVerify
 ```
 
+### Build and run the other images
+
+Similar to running the individual Python scripts, you can also build and run them via Docker. Let's build them all first.
+
+```
+$ sudo -E docker build -t unpool.sign -f sign.dockerfile .
+$ sudo -E docker build -t unpool.verify -f verify.dockerfile .
+$ sudo -E docker build -t unpool.transaction -f transaction.dockerfile .
+$ sudo -E docker build -t unpool.broadcast -f broadcast.dockerfile .
+```
+
+Now we can run them like the Python scripts below; the arguments will be the same. The general command line to run is like this:
+
+```
+$ sudo -E docker run --rm -i unpool.sign "$(cat reference/v4_pbkdf2.json)" --keystorePassword $(cat reference/v4_password.txt)
+
+Enter the following information into the mev smoothing contract:
+Validator Public Key: 9612d7a727c9d0a22e185a1c768478dfe919cada9266988cb32359c11f2b7b27f4ae4040902382ae2910c15e2b420d07
+Message: f486cc4972244f46a922abf8690283cc
+Signature: b74328ebe41a55f5bc4438b0030fcee8d4fb3d29a9c09d3d05ce9533564a676f1a4e338b8199a74ff5275f8d5a9109461382a9aab17fb2f71652006b22cf4af9ca27a031f8465f53f1d454ebb71c947e4a1c597f020f8ea322c64485cfeb20c4
+
+Is the signature valid? True
+```
+
 ## Run via Python
 
 The script is written in Python and uses two external libraries written by the Ethereum Foundation:
 
-1. The `staking-deposit-cli`, used to interface with Geth keystore files: https://github.com/ethereum/staking-deposit-cli/blob/master/staking_deposit/key_handling/keystore.py
+1. The `staking-deposit-cli`, used to interface with EIP-2335 keystore files: https://github.com/ethereum/staking-deposit-cli/blob/master/staking_deposit/key_handling/keystore.py
 2. The `py_ecc` library, used to generate BLS12-381 cryptographic signatures: https://github.com/ethereum/py_ecc
 
 You must first have Python installed. Then you must install the prerequisites. I generally use `pip` like so:
@@ -100,7 +128,7 @@ what is happening, or to learn what is going on internally.
 
 #### Sign A Message
 
-The input to the script is the contents of a Geth keystore file <sup>[1](https://eips.ethereum.org/EIPS/eip-2335)</sup> <sup>[2](https://ethereum.org/en/developers/docs/data-structures-and-encoding/web3-secret-storage)</sup> and an optional keystore password. If you do not specify your keystore password on the command line, the script will ask for hidden input during execution.
+The input to the script is the contents of a EIP-2335 keystore file <sup>[1](https://eips.ethereum.org/EIPS/eip-2335)</sup> <sup>[2](https://ethereum.org/en/developers/docs/data-structures-and-encoding/web3-secret-storage)</sup> and an optional keystore password. If you do not specify your keystore password on the command line, the script will ask for hidden input during execution.
 
 Default:
 ```

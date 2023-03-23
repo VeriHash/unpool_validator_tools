@@ -1,6 +1,5 @@
-blspy==1.0.16
-eth-tester==0.6.0b7
-py_ecc==2.0.0
-requests==2.28.2
-staking-deposit @ git+https://github.com/ethereum/staking-deposit-cli@76ed78224fdfe3daca788d12442b3d1a37978296
-web3==5.31.3
+eth-tester==0.8.0b3
+py-ecc==6.0.0
+pycryptodome==3.17
+staking-deposit @ git+https://github.com/ethereum/staking-deposit-cli@ef89710443814331aa2f592067dc4d6995cc4f6e
+web3==v6.0.0-beta.11

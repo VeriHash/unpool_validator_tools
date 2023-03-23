@@ -4,13 +4,13 @@
 import argparse
 import binascii
 
-from py_ecc.bls import G2ProofOfPossession
+from py_ecc.bls import G2Basic
 
 
 def verify(validatorPublicKey, message, signature):
 
     # Check if the message was signed by the same owner of the public key via the signature
-    return G2ProofOfPossession.Verify(
+    return G2Basic.Verify(
         binascii.a2b_hex(validatorPublicKey),
         binascii.a2b_hex(message),
         binascii.a2b_hex(signature),
